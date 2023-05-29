@@ -88,7 +88,8 @@ pub fn init_logger(log_file: Option<PathBuf>) {
     let logger = fern::Dispatch::new().chain(
         fern::Dispatch::new()
             .format(move |out, message, record| {
-                if cfg!(feature = "timestamp") {
+                #[cfg(feature = "timestamp")]
+                {
                     out.finish(format_args!(
                         "{} | {:16.16} | {:5} | {}",
                         chrono::Local::now()
@@ -97,7 +98,9 @@ pub fn init_logger(log_file: Option<PathBuf>) {
                         colors.color(record.level()),
                         message
                     ))
-                } else {
+                }
+                #[cfg(not(feature = "timestamp"))]
+                {
                     out.finish(format_args!(
                         "{:16.16} | {:5} | {}",
                         record.target(),
@@ -115,7 +118,8 @@ pub fn init_logger(log_file: Option<PathBuf>) {
             .chain(
                 fern::Dispatch::new()
                     .format(move |out, message, record| {
-                        if cfg!(feature = "timestamp") {
+                        #[cfg(feature = "timestamp")]
+                        {
                             out.finish(format_args!(
                                 "{} | {:16.16} | {:5} | {}",
                                 chrono::Local::now().format("%d.%m.%Y | %H:%M:%S"),
@@ -123,7 +127,9 @@ pub fn init_logger(log_file: Option<PathBuf>) {
                                 record.level(),
                                 message
                             ))
-                        } else {
+                        }
+                        #[cfg(not(feature = "timestamp"))]
+                        {
                             out.finish(format_args!(
                                 "{:16.16} | {:5} | {}",
                                 record.target(),
