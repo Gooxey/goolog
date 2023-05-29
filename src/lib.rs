@@ -1,5 +1,10 @@
 //! This library provides a function for initiating a fern [`Logger`](fern::Dispatch) with some custom formatting and [`macros`] to simplify printing logs.
 //!
+//! # Features
+//!
+//! - `timestamp` -> This feature is activated by default. Deactivating this feature will cause the logger to skip printing timestamps, which can be useful when programming for
+//! an embedded system that does not support timestamps.
+//!
 //! # Example
 //!
 //! To print log messages to the console and, if specified, to a file, this library internally uses the [`log`] and [`fern`] crates. But to simplify printing a custom
@@ -83,14 +88,23 @@ pub fn init_logger(log_file: Option<PathBuf>) {
     let logger = fern::Dispatch::new().chain(
         fern::Dispatch::new()
             .format(move |out, message, record| {
-                out.finish(format_args!(
-                    "{} | {:16.16} | {:5} | {}",
-                    chrono::Local::now()
-                        .format("\x1b[2m\x1b[1m%d.%m.%Y\x1b[0m | \x1b[2m\x1b[1m%H:%M:%S\x1b[0m"),
-                    record.target(),
-                    colors.color(record.level()),
-                    message
-                ))
+                if cfg!(feature = "timestamp") {
+                    out.finish(format_args!(
+                        "{} | {:16.16} | {:5} | {}",
+                        chrono::Local::now()
+                            .format("\x1b[2m\x1b[1m%d.%m.%Y\x1b[0m | \x1b[2m\x1b[1m%H:%M:%S\x1b[0m"),
+                        record.target(),
+                        colors.color(record.level()),
+                        message
+                    ))
+                } else {
+                    out.finish(format_args!(
+                        "{:16.16} | {:5} | {}",
+                        record.target(),
+                        colors.color(record.level()),
+                        message
+                    ))
+                }
             })
             .level(log::LevelFilter::Info)
             .chain(std::io::stdout()),
@@ -101,13 +115,22 @@ pub fn init_logger(log_file: Option<PathBuf>) {
             .chain(
                 fern::Dispatch::new()
                     .format(move |out, message, record| {
-                        out.finish(format_args!(
-                            "{} | {:16.16} | {:5} | {}",
-                            chrono::Local::now().format("%d.%m.%Y | %H:%M:%S"),
-                            record.target(),
-                            record.level(),
-                            message
-                        ))
+                        if cfg!(feature = "timestamp") {
+                            out.finish(format_args!(
+                                "{} | {:16.16} | {:5} | {}",
+                                chrono::Local::now().format("%d.%m.%Y | %H:%M:%S"),
+                                record.target(),
+                                record.level(),
+                                message
+                            ))
+                        } else {
+                            out.finish(format_args!(
+                                "{:16.16} | {:5} | {}",
+                                record.target(),
+                                record.level(),
+                                message
+                            ))
+                        }
                     })
                     .level(log::LevelFilter::Info)
                     .chain(fern::log_file(&log_file).unwrap_or_else(|erro| {

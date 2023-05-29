@@ -1,15 +1,20 @@
 [package]
 name = "goolog"
-version = "0.1.0"
+version = "0.2.0"
 description = "A wrapper library with a predefined log format."
 authors = ["Gooxey <dennis.tiderko@gmail.com>"]
 edition = "2021"
+rust-version = "1.60"
 license = "MIT"
 readme = "README.md"
 publish = true
 repository = "https://github.com/Gooxey/goolog.git"
 
+[features]
+default = ["timestamp"]
+timestamp = ["dep:chrono"]
+
 [dependencies]
-chrono = "0.4.25"
+chrono = { version = "0.4.25", optional = true }
 fern = { version = "0.6.2", features = ["colored"] }
 log = "0.4.18"
