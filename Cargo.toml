@@ -1,6 +1,7 @@
 [package]
 name = "goolog"
 version = "0.1.0"
+description = "A wrapper library with a predefined log format."
 authors = ["Gooxey <dennis.tiderko@gmail.com>"]
 edition = "2021"
 license = "MIT"
