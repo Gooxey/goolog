@@ -1,0 +1,14 @@
+[package]
+name = "goolog"
+version = "0.1.0"
+authors = ["Gooxey <dennis.tiderko@gmail.com>"]
+edition = "2021"
+license = "MIT"
+readme = "README.md"
+publish = true
+repository = "https://github.com/Gooxey/goolog.git"
+
+[dependencies]
+chrono = "0.4.25"
+fern = { version = "0.6.2", features = ["colored"] }
+log = "0.4.18"
