@@ -6,6 +6,7 @@ This library provides a function for initiating a fern [Logger](https://docs.rs/
 
 - `timestamp` -> This feature is activated by default. Deactivating this feature will cause the logger to skip printing timestamps, which can be useful when programming for
 an embedded system that does not support timestamps.
+- `esp` -> This feature is intended to be used in conjunction with embedded development. To ensure developers can compile this library for these systems, this feature can not be used with any other feature. Therefore, you will also need to disable the `default-features`.
 
 ## Example
 
@@ -17,7 +18,8 @@ use goolog::*;
 
 fn main() {
     // Initializing the logger
-    // If one decided to pass a path to this function, the logger would also print the log messages to the file specified.
+    // If one decided to pass a path to this function, the logger would also print the log
+    // messages to the file specified.
     init_logger(None);
 
     // See the macros module for all possible log types.
@@ -28,6 +30,9 @@ fn main() {
 The code above will result in the following output:
 
 ```bash
+# The timestamp (first two blocks) will only be shown when the `timestamp` feature is active,
+# which is the default.
+
 29.05.2023 | 14:34:33 | Main             | INFO  | Initialized the goolog logger.
 ```
 

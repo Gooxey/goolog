@@ -1,46 +1,13 @@
-//! This library provides a function for initiating a fern [`Logger`](fern::Dispatch) with some custom formatting and [`macros`] to simplify printing logs.
-//!
-//! # Features
-//!
-//! - `timestamp` -> This feature is activated by default. Deactivating this feature will cause the logger to skip printing timestamps, which can be useful when programming for
-//! an embedded system that does not support timestamps.
-//!
-//! # Example
-//!
-//! To print log messages to the console and, if specified, to a file, this library internally uses the [`log`] and [`fern`] crates. But to simplify printing a custom
-//! sender name, one can also use these [`library macros`](macros):
-//! ```
-//! use goolog::*;
-//!
-//! # fn main() {
-//!     // Initializing the logger
-//!     // If one decided to pass a path to this function, the logger would also print the log messages to the file specified.
-//!     init_logger(None);
-//!
-//!     // See the macros module for all possible log types.
-//!     info!("Main", "Initialized the goolog logger.");
-//! # }
-//! ```
-//! The code above will result in the following output:
-//! ```bash
-//! 29.05.2023 | 14:34:33 | Main             | INFO  | Initialized the goolog logger.
-//! ```
-//!
-//! But in reality, the log message will be formatted with color like this:
-//! ```text
-//! GREY | GREY | WHITE | * | WHITE
-//!
-//! *:
-//!     DEBUG -> Blue
-//!     ERROR -> Red
-//!     INFO  -> Green
-//!     TRACE -> White
-//!     WARN  -> Yellow
-//! ```
+#![doc = include_str!("../README.md")]
 
 #![warn(missing_docs)]
 #![warn(clippy::missing_docs_in_private_items)]
 #![warn(clippy::unwrap_used)]
+#![warn(unreachable_pub)]
+
+#[cfg(feature = "esp")]
+#[cfg(any(feature = "default", feature = "timestamp"))]
+compile_error!("The `esp` feature may not be used with other features!");
 
 use std::path::PathBuf;
 

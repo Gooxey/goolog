@@ -5,6 +5,7 @@
 //! - [`info!`](crate::info)
 //! - [`warn!`](crate::warn)
 //! - [`error!`](crate::error)
+#![cfg_attr(feature = "esp", doc = "- [`fatal!`](crate::fatal)")]
 //! - [`trace!`](crate::trace)
 //! - [`debug!`](crate::debug)
 
@@ -94,6 +95,38 @@ macro_rules! warn {
 macro_rules! error {
     ($sender: expr, $( $argument: tt ) *) => {
         $crate::log::error!(target: &$sender, $( $argument ) *);
+    }
+}
+/// This macro logs a message at the error level and panics the application. \
+/// Fatal errors indicate a problem that is not recoverable.
+///
+/// # Parameters
+///
+/// 1. This is the `name` under which this log should be sent. ( The maximum length is `16 characters`. Everything above will be cut off. )
+/// 2. The following arguments represent the `message` to be sent. It can be used in the same way as the [`format!`] macro.
+///
+/// # Example
+///
+/// ```
+/// use goolog::*;
+///
+/// # fn main() {
+/// # init_logger(None);
+///
+/// let erro = "The given file is invalid!";
+/// fatal!("Main", "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
+///
+/// // This is what this macro will expand to:
+/// goolog::log::error!(target: &"Main", "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
+/// panic!();
+/// # }
+/// ```
+#[macro_export]
+#[cfg(feature = "esp")]
+macro_rules! fatal {
+    ($sender: expr, $( $argument: tt ) *) => {
+        $crate::log::error!(target: &$sender, $( $argument ) *);
+        panic!();
     }
 }
 /// This macro logs a message at the trace level. \
