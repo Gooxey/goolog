@@ -23,17 +23,41 @@ pub mod macros;
 mod tests;
 
 /// Initiate the custom [`Logger`](fern::Dispatch). \
-/// If the path to the log file is specified, the logger will also save the logs to that file. (It is recommended to call the log file `*.log`.) \
-/// Note: The formatting of colors will not be saved.
 /// \
-/// See the libraries documentation for more information on the custom logger.
+/// See the library documentation for more information on the usage and customization possibilities of the goolog logger.
 ///
 /// # Panics
 ///
 /// This function will panic if:
 /// - A global logger has already been set to a previous logger.
 /// - The given log file could not be opened.
-pub fn init_logger(log_file: Option<PathBuf>) {
+pub fn init_logger(
+    max_name_length: Option<u32>,
+    log_file: Option<PathBuf>
+) {
+    fn to_fixed_size(max_name_length: u32, name: &str) -> String {
+        if max_name_length == 0 {
+            return name.to_string();
+        }
+
+        let mut new_name = vec![];
+        let mut name_iter = name.chars();
+        for _ in 0..max_name_length {
+            if let Some(name_char) = name_iter.next() {
+                new_name.push(name_char.to_string());
+            } else {
+                new_name.push(' '.to_string());
+            }
+        }
+
+        new_name.concat()
+    }
+
+    let mut final_max_name_length = 16;
+    if let Some(max_name_length) = max_name_length {
+        final_max_name_length = max_name_length;
+    }
+
     if let Some(mut logs_dir) = log_file.clone() {
         // we need to pop here because logs_dir is the path to the log file and not the path to the log directory
         logs_dir.pop();
@@ -58,10 +82,10 @@ pub fn init_logger(log_file: Option<PathBuf>) {
                 #[cfg(feature = "timestamp")]
                 {
                     out.finish(format_args!(
-                        "{} | {:16.16} | {:5} | {}",
+                        "{} | {} | {:5} | {}",
                         chrono::Local::now()
                             .format("\x1b[2m\x1b[1m%d.%m.%Y\x1b[0m | \x1b[2m\x1b[1m%H:%M:%S\x1b[0m"),
-                        record.target(),
+                        to_fixed_size(final_max_name_length, record.target()),
                         colors.color(record.level()),
                         message
                     ))
@@ -69,8 +93,8 @@ pub fn init_logger(log_file: Option<PathBuf>) {
                 #[cfg(not(feature = "timestamp"))]
                 {
                     out.finish(format_args!(
-                        "{:16.16} | {:5} | {}",
-                        record.target(),
+                        "{} | {:5} | {}",
+                        to_fixed_size(final_max_name_length, record.target()),
                         colors.color(record.level()),
                         message
                     ))
@@ -88,9 +112,9 @@ pub fn init_logger(log_file: Option<PathBuf>) {
                         #[cfg(feature = "timestamp")]
                         {
                             out.finish(format_args!(
-                                "{} | {:16.16} | {:5} | {}",
+                                "{} | {} | {:5} | {}",
                                 chrono::Local::now().format("%d.%m.%Y | %H:%M:%S"),
-                                record.target(),
+                                to_fixed_size(final_max_name_length, record.target()),
                                 record.level(),
                                 message
                             ))
@@ -98,8 +122,8 @@ pub fn init_logger(log_file: Option<PathBuf>) {
                         #[cfg(not(feature = "timestamp"))]
                         {
                             out.finish(format_args!(
-                                "{:16.16} | {:5} | {}",
-                                record.target(),
+                                "{} | {:5} | {}",
+                                to_fixed_size(final_max_name_length, record.target()),
                                 record.level(),
                                 message
                             ))

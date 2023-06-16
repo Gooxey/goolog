@@ -14,7 +14,7 @@
 ///
 /// # Parameters
 ///
-/// 1. This is the `name` under which this log should be sent. ( The maximum length is `16 characters`. Everything above will be cut off. )
+/// 1. This is the `name` under which this log should be sent.
 /// 2. The following arguments represent the `message` to be sent. It can be used in the same way as the [`format!`] macro.
 ///
 /// # Example
@@ -44,7 +44,7 @@ macro_rules! info {
 ///
 /// # Parameters
 ///
-/// 1. This is the `name` under which this log should be sent. ( The maximum length is `16 characters`. Everything above will be cut off. )
+/// 1. This is the `name` under which this log should be sent.
 /// 2. The following arguments represent the `message` to be sent. It can be used in the same way as the [`format!`] macro.
 ///
 /// # Example
@@ -73,7 +73,7 @@ macro_rules! warn {
 ///
 /// # Parameters
 ///
-/// 1. This is the `name` under which this log should be sent. ( The maximum length is `16 characters`. Everything above will be cut off. )
+/// 1. This is the `name` under which this log should be sent.
 /// 2. The following arguments represent the `message` to be sent. It can be used in the same way as the [`format!`] macro.
 ///
 /// # Example
@@ -102,7 +102,7 @@ macro_rules! error {
 ///
 /// # Parameters
 ///
-/// 1. This is the `name` under which this log should be sent. ( The maximum length is `16 characters`. Everything above will be cut off. )
+/// 1. This is the `name` under which this log should be sent.
 /// 2. The following arguments represent the `message` to be sent. It can be used in the same way as the [`format!`] macro.
 ///
 /// # Example
@@ -125,8 +125,10 @@ macro_rules! error {
 #[cfg(feature = "esp")]
 macro_rules! fatal {
     ($sender: expr, $( $argument: tt ) *) => {
-        $crate::log::error!(target: &$sender, $( $argument ) *);
-        panic!();
+        {
+            $crate::log::error!(target: &$sender, $( $argument ) *);
+            panic!();
+        }
     }
 }
 /// This macro logs a message at the trace level. \
@@ -134,7 +136,7 @@ macro_rules! fatal {
 ///
 /// # Parameters
 ///
-/// 1. This is the `name` under which this log should be sent. ( The maximum length is `16 characters`. Everything above will be cut off. )
+/// 1. This is the `name` under which this log should be sent.
 /// 2. The following arguments represent the `message` to be sent. It can be used in the same way as the [`format!`] macro.
 ///
 /// # Example
@@ -164,7 +166,7 @@ macro_rules! trace {
 ///
 /// # Parameters
 ///
-/// 1. This is the `name` under which this log should be sent. ( The maximum length is `16 characters`. Everything above will be cut off. )
+/// 1. This is the `name` under which this log should be sent.
 /// 2. The following arguments represent the `message` to be sent. It can be used in the same way as the [`format!`] macro.
 ///
 /// # Example
