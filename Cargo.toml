@@ -1,6 +1,6 @@
 [package]
 name = "goolog"
-version = "0.4.0"
+version = "0.4.1"
 description = "A wrapper library with a predefined log format."
 authors = ["Gooxey <dennis.tiderko@gmail.com>"]
 edition = "2021"
@@ -8,7 +8,8 @@ license = "MIT"
 readme = "README.md"
 publish = true
 repository = "https://github.com/Gooxey/goolog.git"
-categories = ["command-line-utilities", "development-tools::debugging", "embedded"]
+categories = ["development-tools::debugging", "embedded"]
+keywords = ["embedded", "esp", "log", "logger", "macros"]
 
 [features]
 default = ["timestamp"]
