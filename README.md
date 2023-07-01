@@ -2,12 +2,27 @@
 
 This library provides a function for initiating a fern [Logger](https://docs.rs/fern/0.6.2/fern/struct.Dispatch.html) with some custom formatting and [macros](./src/macros.rs) to simplify printing logs.
 
+## Usage in embedded development
+
+To use this crate on embedded systems, you must disable the `timestamp` feature:
+
+Run this command:
+
+```text
+$ cargo add goolog --no-default-features
+```
+
+Or add this to your `Cargo.toml`
+
+```toml
+goolog = { version = "0.6.0", default-features = false }
+```
+
 ## Features
 
 | Feature | Description |
 |-|-|
 | `timestamp` | This feature is activated by default. Deactivating this feature will cause the logger to skip printing timestamps, which can be useful when programming for an embedded system that does not support timestamps. |
-| `esp` | This feature is intended to be used in conjunction with embedded development. To ensure developers can compile this library for these systems, this feature can not be used with any other feature. Therefore, you will also need to disable the `default-features`. |
 | `wasm` | This logger will only work on `wasm targets` if this feature is enabled. |
 
 ## Customization

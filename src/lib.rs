@@ -4,10 +4,6 @@
 #![warn(clippy::unwrap_used)]
 #![warn(unreachable_pub)]
 
-#[cfg(feature = "esp")]
-#[cfg(any(feature = "default", feature = "timestamp"))]
-compile_error!("The `esp` feature may not be used with other features!");
-
 #[cfg(not(feature = "wasm"))]
 use std::path::PathBuf;
 

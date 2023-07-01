@@ -5,7 +5,7 @@
 //! - [`info!`](crate::info)
 //! - [`warn!`](crate::warn)
 //! - [`error!`](crate::error)
-#![cfg_attr(feature = "esp", doc = "- [`fatal!`](crate::fatal)")]
+//! - [`fatal!`](crate::fatal)
 //! - [`trace!`](crate::trace)
 //! - [`debug!`](crate::debug)
 
@@ -122,7 +122,6 @@ macro_rules! error {
 /// # }
 /// ```
 #[macro_export]
-#[cfg(feature = "esp")]
 macro_rules! fatal {
     ($sender: expr, $( $argument: tt ) *) => {
         {
