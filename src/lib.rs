@@ -1,5 +1,4 @@
 #![doc = include_str!("../README.md")]
-
 #![warn(missing_docs)]
 #![warn(clippy::missing_docs_in_private_items)]
 #![warn(clippy::unwrap_used)]
@@ -9,18 +8,55 @@
 #[cfg(any(feature = "default", feature = "timestamp"))]
 compile_error!("The `esp` feature may not be used with other features!");
 
+#[cfg(not(feature = "wasm"))]
 use std::path::PathBuf;
 
 use fern::colors::{
     Color,
     ColoredLevelConfig,
 };
-
 // A required export needed by this libraries macros.
 pub use log;
 
 pub mod macros;
 mod tests;
+
+/// Generate the log line
+#[cfg(feature = "timestamp")]
+macro_rules! generate_log {
+    (
+        $final_max_name_length: ident,
+        $record: ident,
+        $colors: ident,
+        $message: ident
+    ) => {
+        format!(
+            "{} | {} | {:5} | {}",
+            chrono::Local::now()
+                .format("\x1b[2m\x1b[1m%d.%m.%Y\x1b[0m | \x1b[2m\x1b[1m%H:%M:%S\x1b[0m"),
+            to_fixed_size($final_max_name_length, $record.target()),
+            $colors.color($record.level()),
+            $message
+        )
+    };
+}
+/// Generate the log line
+#[cfg(not(feature = "timestamp"))]
+macro_rules! generate_log {
+    (
+        $final_max_name_length: ident,
+        $record: ident,
+        $colors: ident,
+        $message: ident
+    ) => {
+        format!(
+            "{} | {:5} | {}",
+            to_fixed_size($final_max_name_length, $record.target()),
+            $colors.color($record.level()),
+            $message
+        )
+    };
+}
 
 /// Initiate the custom [`Logger`](fern::Dispatch). \
 /// \
@@ -33,8 +69,9 @@ mod tests;
 /// - The given log file could not be opened.
 pub fn init_logger(
     max_name_length: Option<u32>,
-    log_file: Option<PathBuf>
+    #[cfg(not(feature = "wasm"))] log_file: Option<PathBuf>,
 ) {
+    /// Edit the name to be `max_name_length` long.
     fn to_fixed_size(max_name_length: u32, name: &str) -> String {
         if max_name_length == 0 {
             return name.to_string();
@@ -58,6 +95,7 @@ pub fn init_logger(
         final_max_name_length = max_name_length;
     }
 
+    #[cfg(not(feature = "wasm"))]
     if let Some(mut logs_dir) = log_file.clone() {
         // we need to pop here because logs_dir is the path to the log file and not the path to the log directory
         logs_dir.pop();
@@ -76,69 +114,39 @@ pub fn init_logger(
         .trace(Color::White)
         .warn(Color::Yellow);
 
-    let logger = fern::Dispatch::new().chain(
+    #[allow(unused_mut)] // when we use the wasm feature this does not need to be mut
+    let mut logger = fern::Dispatch::new().chain(
         fern::Dispatch::new()
-            .format(move |out, message, record| {
-                #[cfg(feature = "timestamp")]
-                {
-                    out.finish(format_args!(
-                        "{} | {} | {:5} | {}",
-                        chrono::Local::now()
-                            .format("\x1b[2m\x1b[1m%d.%m.%Y\x1b[0m | \x1b[2m\x1b[1m%H:%M:%S\x1b[0m"),
-                        to_fixed_size(final_max_name_length, record.target()),
-                        colors.color(record.level()),
-                        message
-                    ))
-                }
-                #[cfg(not(feature = "timestamp"))]
-                {
-                    out.finish(format_args!(
-                        "{} | {:5} | {}",
-                        to_fixed_size(final_max_name_length, record.target()),
-                        colors.color(record.level()),
-                        message
-                    ))
-                }
+            .format(move |_out, message, record| {
+                let log = generate_log!(final_max_name_length, record, colors, message);
+
+                #[cfg(feature = "wasm")]
+                web_sys::console::log_1(&log.into());
+
+                #[cfg(not(feature = "wasm"))]
+                _out.finish(format_args!("{log}"));
             })
             .level(log::LevelFilter::Info)
             .chain(std::io::stdout()),
     );
 
+    #[cfg(not(feature = "wasm"))]
     if let Some(log_file) = log_file {
-        logger
-            .chain(
-                fern::Dispatch::new()
-                    .format(move |out, message, record| {
-                        #[cfg(feature = "timestamp")]
-                        {
-                            out.finish(format_args!(
-                                "{} | {} | {:5} | {}",
-                                chrono::Local::now().format("%d.%m.%Y | %H:%M:%S"),
-                                to_fixed_size(final_max_name_length, record.target()),
-                                record.level(),
-                                message
-                            ))
-                        }
-                        #[cfg(not(feature = "timestamp"))]
-                        {
-                            out.finish(format_args!(
-                                "{} | {:5} | {}",
-                                to_fixed_size(final_max_name_length, record.target()),
-                                record.level(),
-                                message
-                            ))
-                        }
-                    })
-                    .level(log::LevelFilter::Info)
-                    .chain(fern::log_file(&log_file).unwrap_or_else(|erro| {
-                        panic!("Failed to open the log file `{log_file:#?}`. Error: {erro}")
-                    })),
-            )
-            .apply()
-            .unwrap_or_else(|erro| panic!("Failed to initiate the goolog logger. Error: {erro}"));
-    } else {
-        logger
-            .apply()
-            .unwrap_or_else(|erro| panic!("Failed to initiate the goolog logger. Error: {erro}"));
+        logger = logger.chain(
+            fern::Dispatch::new()
+                .format(move |out, message, record| {
+                    let log = generate_log!(final_max_name_length, record, colors, message);
+
+                    out.finish(format_args!("{log}"))
+                })
+                .level(log::LevelFilter::Info)
+                .chain(fern::log_file(&log_file).unwrap_or_else(|erro| {
+                    panic!("Failed to open the log file `{log_file:#?}`. Error: {erro}")
+                })),
+        );
     }
+
+    logger
+        .apply()
+        .unwrap_or_else(|erro| panic!("Failed to initiate the goolog logger. Error: {erro}"));
 }

@@ -4,11 +4,15 @@ This library provides a function for initiating a fern [Logger](https://docs.rs/
 
 ## Features
 
-- `timestamp` -> This feature is activated by default. Deactivating this feature will cause the logger to skip printing timestamps, which can be useful when programming for
-an embedded system that does not support timestamps.
-- `esp` -> This feature is intended to be used in conjunction with embedded development. To ensure developers can compile this library for these systems, this feature can not be used with any other feature. Therefore, you will also need to disable the `default-features`.
+| Feature | Description |
+|-|-|
+| `timestamp` | This feature is activated by default. Deactivating this feature will cause the logger to skip printing timestamps, which can be useful when programming for an embedded system that does not support timestamps. |
+| `esp` | This feature is intended to be used in conjunction with embedded development. To ensure developers can compile this library for these systems, this feature can not be used with any other feature. Therefore, you will also need to disable the `default-features`. |
+| `wasm` | This logger will only work on `wasm targets` if this feature is enabled. |
 
 ## Customization
+
+> When the `wasm feature` is enabled, you have only `one` method of customization.
 
 Currently, there are two ways to customize your goolog logger:
 
@@ -34,6 +38,8 @@ If no limit is given, the logger has no way of knowing how much space to leave f
 
 ### Setting a log file
 
+> This customization option is `not` available for the `wasm feature`.
+
 By specifying a `path` to the `log_file` parameter, you can tell the logger to save an unformatted version of the log to that file. Meaning, you will have a colored log in your console and an uncolored log in the specified file.
 
 ## Example
@@ -46,6 +52,7 @@ use goolog::*;
 
 fn main() {
     // Initializing the logger
+    // When you enable the wasm feature, you have only one parameter
     init_logger(None, None);
 
     // See the macros module for all possible log types.
@@ -56,8 +63,8 @@ fn main() {
 The code above will result in the following output:
 
 ```bash
-# The timestamp (first two blocks) will only be shown when the `timestamp` feature is active,
-# which is the default.
+# The timestamp (first two blocks) will only be shown when the `timestamp`
+# feature is active, which is the default.
 
 29.05.2023 | 14:34:33 | Main             | INFO  | Initialized the goolog logger.
 ```
