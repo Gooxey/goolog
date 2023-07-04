@@ -111,14 +111,14 @@ macro_rules! error {
 /// use goolog::*;
 ///
 /// # fn main() {
-/// # init_logger(None);
+/// # init_logger(None, None);
 ///
 /// let erro = "The given file is invalid!";
 /// fatal!("Main", "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
 ///
-/// // This is what this macro will expand to:
+/// // The equivalent of this macro:
 /// goolog::log::error!(target: &"Main", "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
-/// panic!();
+/// panic!("Main => An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
 /// # }
 /// ```
 #[macro_export]
@@ -126,7 +126,13 @@ macro_rules! fatal {
     ($sender: expr, $( $argument: tt ) *) => {
         {
             $crate::log::error!(target: &$sender, $( $argument ) *);
-            panic!();
+            panic!(
+                "{} => {}",
+                &$sender,
+                format!(
+                    $( $argument ) *
+                )
+            );
         }
     }
 }
