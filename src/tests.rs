@@ -6,7 +6,7 @@ use super::*;
 
 #[test]
 fn no_log_file_set() {
-    init_logger(None, None);
+    init_logger(None, None, None);
 
     info!("Main", "Hello World!");
     info!("MySuperAwesomeMCManageClient", "Hello World!");
@@ -15,7 +15,7 @@ fn no_log_file_set() {
 fn log_file_set() {
     let mut log_file_path = PathBuf::from("logs/main.log");
 
-    init_logger(None, Some(log_file_path.clone()));
+    init_logger(None, None, Some(log_file_path.clone()));
 
     info!("Main", "Hello World!");
     info!("MySuperAwesomeMCManageClient", "Hello World!");

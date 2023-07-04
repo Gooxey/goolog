@@ -15,7 +15,7 @@ $ cargo add goolog --no-default-features
 Or add this to your `Cargo.toml`
 
 ```toml
-goolog = { version = "0.6.0", default-features = false }
+goolog = { version = "x.y.z", default-features = false }
 ```
 
 ## Features
@@ -27,9 +27,30 @@ goolog = { version = "0.6.0", default-features = false }
 
 ## Customization
 
-> When the `wasm feature` is enabled, you have only `one` method of customization.
+> When the `wasm feature` is enabled, you have only `two` method of customization.
 
-Currently, there are two ways to customize your goolog logger:
+Currently, there are three ways to customize your goolog logger:
+
+### Changing the logging level
+
+> The log level for logging to a file will always remain at `info`
+
+By default the logger will log at the `info` level. To change this, just provide a new log level.
+
+```rust
+use goolog::*;
+use goolog::log::LevelFilter;
+
+fn main() {
+    // Initializing the logger with the log level set to trace
+    // When you enable the wasm feature, you have only two parameters
+    init_logger(Some(LevelFilter::Trace), None, None);
+
+    // See the macros module for all possible log types.
+    // this will only be logged if the log level is set to trace
+    trace!("Main", "Initialized the goolog logger.");
+}
+```
 
 ### Changing the length of caller names
 
@@ -67,8 +88,8 @@ use goolog::*;
 
 fn main() {
     // Initializing the logger
-    // When you enable the wasm feature, you have only one parameter
-    init_logger(None, None);
+    // When you enable the wasm feature, you have only two parameters
+    init_logger(None, None, None);
 
     // See the macros module for all possible log types.
     info!("Main", "Initialized the goolog logger.");

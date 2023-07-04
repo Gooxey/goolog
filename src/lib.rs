@@ -6,6 +6,7 @@
 
 #[cfg(not(feature = "wasm"))]
 use std::path::PathBuf;
+use std::sync::OnceLock;
 
 use fern::colors::{
     Color,
@@ -13,45 +14,72 @@ use fern::colors::{
 };
 // A required export needed by this libraries macros.
 pub use log;
+use log::{
+    Level,
+    LevelFilter,
+};
 
 pub mod macros;
 mod tests;
+
+/// # DO NOT TOUCH THIS STATIC
+pub static INTERNAL__LOGGER_ACTIVE: OnceLock<()> = OnceLock::new();
 
 /// Generate the log line
 #[cfg(feature = "timestamp")]
 macro_rules! generate_log {
     (
-        $final_max_name_length: ident,
+        $max_name_length: ident,
         $record: ident,
         $colors: ident,
         $message: ident
-    ) => {
+    ) => {{
+        let mut message = $message.to_string();
+        let mut log_level = $colors.color($record.level()).to_string();
+        #[cfg(not(feature = "std_fatal"))]
+        if let Level::Error = $record.level() {
+            if let Some(val) = message.strip_prefix("$goolog:fatal=") {
+                log_level = log_level.replace("ERROR", "FATAL");
+                message = val.into();
+            }
+        }
+
         format!(
-            "{} | {} | {:5} | {}",
+            "{} | {} | {:14.14} | {}",
             chrono::Local::now()
                 .format("\x1b[2m\x1b[1m%d.%m.%Y\x1b[0m | \x1b[2m\x1b[1m%H:%M:%S\x1b[0m"),
-            to_fixed_size($final_max_name_length, $record.target()),
-            $colors.color($record.level()),
-            $message
+            to_fixed_size($max_name_length, $record.target()),
+            log_level,
+            message
         )
-    };
+    }};
 }
 /// Generate the log line
 #[cfg(not(feature = "timestamp"))]
 macro_rules! generate_log {
     (
-        $final_max_name_length: ident,
+        $max_name_length: ident,
         $record: ident,
         $colors: ident,
         $message: ident
-    ) => {
+    ) => {{
+        let mut message = $message.to_string();
+        let mut log_level = $colors.color($record.level()).to_string();
+        #[cfg(not(feature = "std_fatal"))]
+        if let Level::Error = $record.level() {
+            if let Some(val) = message.strip_prefix("$goolog:fatal=") {
+                log_level = log_level.replace("ERROR", "FATAL");
+                message = val.into();
+            }
+        }
+
         format!(
-            "{} | {:5} | {}",
-            to_fixed_size($final_max_name_length, $record.target()),
-            $colors.color($record.level()),
-            $message
+            "{} | {:14.14} | {}",
+            to_fixed_size($max_name_length, $record.target()),
+            log_level,
+            message
         )
-    };
+    }};
 }
 
 /// Initiate the custom [`Logger`](fern::Dispatch). \
@@ -64,6 +92,7 @@ macro_rules! generate_log {
 /// - A global logger has already been set to a previous logger.
 /// - The given log file could not be opened.
 pub fn init_logger(
+    log_level: Option<LevelFilter>,
     max_name_length: Option<u32>,
     #[cfg(not(feature = "wasm"))] log_file: Option<PathBuf>,
 ) {
@@ -86,18 +115,17 @@ pub fn init_logger(
         new_name.concat()
     }
 
-    let mut final_max_name_length = 16;
-    if let Some(max_name_length) = max_name_length {
-        final_max_name_length = max_name_length;
-    }
+    let max_name_length = max_name_length.unwrap_or(16);
+    let log_level = log_level.unwrap_or(LevelFilter::Info);
 
     #[cfg(not(feature = "wasm"))]
     if let Some(mut logs_dir) = log_file.clone() {
         // we need to pop here because logs_dir is the path to the log file and not the path to the log directory
         logs_dir.pop();
-        std::fs::create_dir_all(&logs_dir).unwrap_or_else(|erro| {
-            panic!(
-                "An error occurred while creating the directory '{}'. Error: {erro}",
+        std::fs::create_dir_all(&logs_dir).unwrap_or_else(|error| {
+            fatal!(
+                "Logger",
+                "An error occurred while creating the directory '{}'. Error: {error}",
                 logs_dir.display()
             )
         });
@@ -114,7 +142,7 @@ pub fn init_logger(
     let mut logger = fern::Dispatch::new().chain(
         fern::Dispatch::new()
             .format(move |_out, message, record| {
-                let log = generate_log!(final_max_name_length, record, colors, message);
+                let log = generate_log!(max_name_length, record, colors, message);
 
                 #[cfg(feature = "wasm")]
                 web_sys::console::log_1(&log.into());
@@ -122,7 +150,7 @@ pub fn init_logger(
                 #[cfg(not(feature = "wasm"))]
                 _out.finish(format_args!("{log}"));
             })
-            .level(log::LevelFilter::Info)
+            .level(log_level)
             .chain(std::io::stdout()),
     );
 
@@ -131,18 +159,31 @@ pub fn init_logger(
         logger = logger.chain(
             fern::Dispatch::new()
                 .format(move |out, message, record| {
-                    let log = generate_log!(final_max_name_length, record, colors, message);
+                    let log = generate_log!(max_name_length, record, colors, message);
 
                     out.finish(format_args!("{log}"))
                 })
                 .level(log::LevelFilter::Info)
-                .chain(fern::log_file(&log_file).unwrap_or_else(|erro| {
-                    panic!("Failed to open the log file `{log_file:#?}`. Error: {erro}")
+                .chain(fern::log_file(&log_file).unwrap_or_else(|error| {
+                    fatal!(
+                        "Logger",
+                        "Failed to open the log file `{log_file:#?}`. Error: {error}"
+                    )
                 })),
         );
     }
 
-    logger
-        .apply()
-        .unwrap_or_else(|erro| panic!("Failed to initiate the goolog logger. Error: {erro}"));
+    logger.apply().unwrap_or_else(|error| {
+        fatal!(
+            "Logger",
+            "Failed to initiate the goolog logger. Error: {error}"
+        )
+    });
+
+    if INTERNAL__LOGGER_ACTIVE.set(()).is_err() {
+        fatal!(
+            "Logger",
+            "The `INTERNAL__LOGGER_ACTIVE` static should only be used by the goolog logger or its macros."
+        )
+    }
 }
