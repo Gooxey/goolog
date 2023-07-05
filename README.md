@@ -25,6 +25,48 @@ goolog = { version = "x.y.z", default-features = false }
 | `timestamp` | This feature is activated by default. Deactivating this feature will cause the logger to skip printing timestamps, which can be useful when programming for an embedded system that does not support timestamps. |
 | `wasm` | This logger will only work on `wasm targets` if this feature is enabled. |
 
+## Quality of life
+
+> For more details, refer to the documentation of any macro.
+
+When printing log lines to the console using these library macros, there are two ways to specify the caller name:
+
+### Specification by macro
+
+This is always possible. Even in combination with the second method described below.
+
+```rust
+use goolog::*;
+
+fn main() {
+    // Initializing the logger
+    init_logger(None, None, None);
+
+    info!("Main", "Initialized the goolog logger.");
+}
+```
+
+### Specification by constant
+
+For this method, you will only need to specify the caller name once:
+
+```rust
+use goolog::*;
+
+const GOOLOG_CALLER: &str = "Main";
+
+fn main() {
+    // Initializing the logger
+    init_logger(None, None, None);
+
+    info!("Initialized the goolog logger.");
+
+    // You can still specify a different caller name
+    // just for that log line.
+    info!("OtherCaller", "Initialized the goolog logger.");
+}
+```
+
 ## Customization
 
 > When the `wasm feature` is enabled, you have only `two` method of customization.
@@ -43,11 +85,13 @@ use goolog::log::LevelFilter;
 
 fn main() {
     // Initializing the logger with the log level set to trace
-    // When you enable the wasm feature, you have only two parameters
+    // When you enable the wasm feature, you have only two
+    // parameters
     init_logger(Some(LevelFilter::Trace), None, None);
 
     // See the macros module for all possible log types.
-    // this will only be logged if the log level is set to trace
+    // this will only be logged if the log level is set to
+    // trace
     trace!("Main", "Initialized the goolog logger.");
 }
 ```
@@ -88,7 +132,8 @@ use goolog::*;
 
 fn main() {
     // Initializing the logger
-    // When you enable the wasm feature, you have only two parameters
+    // When you enable the wasm feature, you have only two
+    // parameters
     init_logger(None, None, None);
 
     // See the macros module for all possible log types.
@@ -99,8 +144,8 @@ fn main() {
 The code above will result in the following output:
 
 ```bash
-# The timestamp (first two blocks) will only be shown when the `timestamp`
-# feature is active, which is the default.
+# The timestamp (first two blocks) will only be shown when the
+# `timestamp` feature is active, which is the default.
 
 29.05.2023 | 14:34:33 | Main             | INFO  | Initialized the goolog logger.
 ```
