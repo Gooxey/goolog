@@ -22,6 +22,9 @@ use log::{
 pub mod macros;
 mod tests;
 
+/// The caller name for fatal logs send by this logger.
+const GOOLOG_CALLER: &str = "Logger";
+
 /// # DO NOT TOUCH THIS STATIC
 pub static INTERNAL__LOGGER_ACTIVE: OnceLock<()> = OnceLock::new();
 
@@ -124,7 +127,6 @@ pub fn init_logger(
         logs_dir.pop();
         std::fs::create_dir_all(&logs_dir).unwrap_or_else(|error| {
             fatal!(
-                "Logger",
                 "An error occurred while creating the directory '{}'. Error: {error}",
                 logs_dir.display()
             )
@@ -165,24 +167,17 @@ pub fn init_logger(
                 })
                 .level(log::LevelFilter::Info)
                 .chain(fern::log_file(&log_file).unwrap_or_else(|error| {
-                    fatal!(
-                        "Logger",
-                        "Failed to open the log file `{log_file:#?}`. Error: {error}"
-                    )
+                    fatal!("Failed to open the log file `{log_file:#?}`. Error: {error}")
                 })),
         );
     }
 
-    logger.apply().unwrap_or_else(|error| {
-        fatal!(
-            "Logger",
-            "Failed to initiate the goolog logger. Error: {error}"
-        )
-    });
+    logger
+        .apply()
+        .unwrap_or_else(|error| fatal!("Failed to initiate the goolog logger. Error: {error}"));
 
     if INTERNAL__LOGGER_ACTIVE.set(()).is_err() {
         fatal!(
-            "Logger",
             "The `INTERNAL__LOGGER_ACTIVE` static should only be used by the goolog logger or its macros."
         )
     }

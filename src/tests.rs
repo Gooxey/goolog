@@ -8,8 +8,8 @@ use super::*;
 fn no_log_file_set() {
     init_logger(None, None, None);
 
-    info!("Main", "Hello World!");
-    info!("MySuperAwesomeMCManageClient", "Hello World!");
+    info!("Main"; "Hello World!");
+    info!("MySuperAwesomeMCManageClient"; "Hello World!");
 }
 #[test]
 fn log_file_set() {
@@ -17,8 +17,8 @@ fn log_file_set() {
 
     init_logger(None, None, Some(log_file_path.clone()));
 
-    info!("Main", "Hello World!");
-    info!("MySuperAwesomeMCManageClient", "Hello World!");
+    info!("Main"; "Hello World!");
+    info!("MySuperAwesomeMCManageClient"; "Hello World!");
 
     assert!(
         log_file_path.exists(),
@@ -27,5 +27,5 @@ fn log_file_set() {
     // remove the file from the path
     log_file_path.pop();
     fs::remove_dir_all(log_file_path)
-        .unwrap_or_else(|erro| panic!("Could not remove the log file. Error: {erro}"));
+        .unwrap_or_else(|erro| fatal!("Main"; "Could not remove the log file. Error: {erro}"));
 }

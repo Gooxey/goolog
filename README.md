@@ -42,7 +42,7 @@ fn main() {
     // Initializing the logger
     init_logger(None, None, None);
 
-    info!("Main", "Initialized the goolog logger.");
+    info!("Main"; "Initialized the goolog logger.");
 }
 ```
 
@@ -63,7 +63,7 @@ fn main() {
 
     // You can still specify a different caller name
     // just for that log line.
-    info!("OtherCaller", "Initialized the goolog logger.");
+    info!("OtherCaller"; "Initialized the goolog logger.");
 }
 ```
 
@@ -92,7 +92,7 @@ fn main() {
     // See the macros module for all possible log types.
     // this will only be logged if the log level is set to
     // trace
-    trace!("Main", "Initialized the goolog logger.");
+    trace!("Main"; "Initialized the goolog logger.");
 }
 ```
 
@@ -137,7 +137,7 @@ fn main() {
     init_logger(None, None, None);
 
     // See the macros module for all possible log types.
-    info!("Main", "Initialized the goolog logger.");
+    info!("Main"; "Initialized the goolog logger.");
 }
 ```
 

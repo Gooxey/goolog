@@ -26,7 +26,7 @@
 /// # init_logger(None, None, None);
 ///
 /// let secs = Duration::new(1, 0);
-/// info!("Main", "Started in {:?} secs", secs);
+/// info!("Main"; "Started in {:?} secs", secs);
 ///
 /// // This is what this macro will expand to:
 /// goolog::log::info!(target: &"Main", "Started in {:?} secs", secs);
@@ -37,6 +37,7 @@
 ///
 /// ```
 /// use goolog::*;
+/// use std::time::Duration;
 ///
 /// const GOOLOG_CALLER: &str = "Main";
 /// # fn main() {
@@ -46,21 +47,21 @@
 /// info!("Started in {:?} secs", secs);
 ///
 /// // This is what this macro will expand to:
-/// goolog::info!(GOOLOG_CALLER, "Started in {:?} secs", secs);;
+/// goolog::info!(GOOLOG_CALLER; "Started in {:?} secs", secs);;
 /// // this will then further expand to:
 /// goolog::log::info!(target: &GOOLOG_CALLER, "Started in {:?} secs", secs);
 ///
 /// // but you can still specify a caller name which will result in the standard behavior
-/// info!("OtherCaller", "Started in {:?} secs", secs);
+/// info!("OtherCaller"; "Started in {:?} secs", secs);
 /// # }
 /// ```
 #[macro_export]
 macro_rules! info {
-    ($caller: expr, $( $argument: tt ) *) => {
+    ($caller: expr; $( $argument: tt ) *) => {
         $crate::log::info!(target: &$caller, $( $argument ) *);
     };
     ($( $argument: tt ) *) => {
-        info!(GOOLOG_CALLER, $( $argument ) *)
+        info!(GOOLOG_CALLER; $( $argument ) *)
     }
 }
 /// This macro logs a message at the warn level. \
@@ -79,7 +80,7 @@ macro_rules! info {
 /// # init_logger(None, None, None);
 ///
 /// let erro = "The given file is invalid!";
-/// warn!("Main", "Accept the EULA to use this MCServer. Error: {}", erro);
+/// warn!("Main"; "Accept the EULA to use this MCServer. Error: {}", erro);
 ///
 /// // This is what this macro will expand to:
 /// goolog::log::warn!(target: &"Main", "Accept the EULA to use this MCServer. Error: {}", erro);
@@ -99,21 +100,21 @@ macro_rules! info {
 /// warn!("Accept the EULA to use this MCServer. Error: {}", erro);
 ///
 /// // This is what this macro will expand to:
-/// goolog::warn!(GOOLOG_CALLER, "Accept the EULA to use this MCServer. Error: {}", erro);
+/// goolog::warn!(GOOLOG_CALLER; "Accept the EULA to use this MCServer. Error: {}", erro);
 /// // this will then further expand to:
 /// goolog::log::warn!(target: &GOOLOG_CALLER, "Accept the EULA to use this MCServer. Error: {}", erro);
 ///
 /// // but you can still specify a caller name which will result in the standard behavior
-/// warn!("OtherCaller", "Accept the EULA to use this MCServer. Error: {}", erro);
+/// warn!("OtherCaller"; "Accept the EULA to use this MCServer. Error: {}", erro);
 /// # }
 /// ```
 #[macro_export]
 macro_rules! warn {
-    ($caller: expr, $( $argument: tt ) *) => {
+    ($caller: expr; $( $argument: tt ) *) => {
         $crate::log::warn!(target: &$caller, $( $argument ) *);
     };
     ($( $argument: tt ) *) => {
-        warn!(GOOLOG_CALLER, $( $argument ) *)
+        warn!(GOOLOG_CALLER; $( $argument ) *)
     }
 }
 /// This macro logs a message at the error level. \
@@ -137,7 +138,7 @@ macro_rules! warn {
 /// # init_logger(None, None, None);
 ///
 /// let erro = "The given file is invalid!";
-/// error!("Main", "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
+/// error!("Main"; "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
 ///
 /// // This is what this macro will expand to:
 /// goolog::log::error!(target: &"Main", "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
@@ -157,21 +158,21 @@ macro_rules! warn {
 /// error!("An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
 ///
 /// // This is what this macro will expand to:
-/// goolog::error!(GOOLOG_CALLER, "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
+/// goolog::error!(GOOLOG_CALLER; "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
 /// // this will then further expand to:
 /// goolog::log::error!(target: &GOOLOG_CALLER, "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
 ///
 /// // but you can still specify a caller name which will result in the standard behavior
-/// error!("OtherCaller", "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
+/// error!("OtherCaller"; "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
 /// # }
 /// ```
 #[macro_export]
 macro_rules! error {
-    ($caller: expr, $( $argument: tt ) *) => {
+    ($caller: expr; $( $argument: tt ) *) => {
         $crate::log::error!(target: &$caller, $( $argument ) *);
     };
     ($( $argument: tt ) *) => {
-        error!(GOOLOG_CALLER, $( $argument ) *)
+        error!(GOOLOG_CALLER; $( $argument ) *)
     }
 }
 /// This macro logs a message at the error level and exits the application with the error code 1. \
@@ -184,13 +185,13 @@ macro_rules! error {
 ///
 /// # Example
 ///
-/// ```
+/// ```should_panic
 /// use goolog::*;
 /// # fn main() {
 /// # init_logger(None, None, None);
 ///
 /// let erro = "The given file is invalid!";
-/// fatal!("Main", "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
+/// fatal!("Main"; "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
 ///
 /// // This is what this macro will expand to:
 ///     // don't even think about touching this static
@@ -205,13 +206,13 @@ macro_rules! error {
 ///         "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro
 ///     );
 /// }
-/// std::process::exit(1)
+/// std::process::exit(1);
 /// # }
 /// ```
 ///
 /// In case you are tired of always specifying the name of the caller, you can also just set a constant:
 ///
-/// ```
+/// ```should_panic
 /// use goolog::*;
 ///
 /// const GOOLOG_CALLER: &str = "Main";
@@ -222,7 +223,7 @@ macro_rules! error {
 /// fatal!("An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
 ///
 /// // This is what this macro will expand to:
-/// goolog::fatal!(GOOLOG_CALLER, "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
+/// goolog::fatal!(GOOLOG_CALLER; "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
 /// // this will then further expand to:
 ///     // don't even think about touching this static
 /// if goolog::INTERNAL__LOGGER_ACTIVE.get().is_some() {
@@ -236,15 +237,15 @@ macro_rules! error {
 ///         "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro
 ///     );
 /// }
-/// std::process::exit(1)
+/// std::process::exit(1);
 ///
 /// // but you can still specify a caller name which will result in the standard behavior
-/// fatal!("OtherCaller", "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
+/// fatal!("OtherCaller"; "An error occurred while waiting on the Minecraft server to finish. Error: {}", erro);
 /// # }
 /// ```
 #[macro_export]
 macro_rules! fatal {
-    ($caller: expr, $( $argument: tt ) *) => {
+    ($caller: expr; $( $argument: tt ) *) => {
         {
             // we assume the user followed our warning and that the goolog logger is active
             if $crate::INTERNAL__LOGGER_ACTIVE.get().is_some() {
@@ -259,11 +260,11 @@ macro_rules! fatal {
                     $( $argument ) *
                 );
             }
-            std::process::exit(1)
+            std::process::exit(1);
         }
     };
     ($( $argument: tt ) *) => {
-        fatal!(GOOLOG_CALLER, $( $argument ) *)
+        fatal!(GOOLOG_CALLER; $( $argument ) *)
     }
 }
 /// This macro logs a message at the trace level. \
@@ -281,7 +282,7 @@ macro_rules! fatal {
 /// # fn main() {
 /// # init_logger(None, None, None);
 ///
-/// trace!("Main", "Initiated goolog logger without a log file set.");
+/// trace!("Main"; "Initiated goolog logger without a log file set.");
 ///
 /// // This is what this macro will expand to:
 /// goolog::log::trace!(target: &"Main", "Initiated goolog logger without a log file set.");
@@ -300,21 +301,21 @@ macro_rules! fatal {
 /// trace!("Initiated goolog logger without a log file set.");
 ///
 /// // This is what the code above will expand to:
-/// goolog::trace!(GOOLOG_CALLER, "Initiated goolog logger without a log file set.");
+/// goolog::trace!(GOOLOG_CALLER; "Initiated goolog logger without a log file set.");
 /// // this will then further expand to:
 /// goolog::log::trace!(target: &GOOLOG_CALLER, "Initiated goolog logger without a log file set.");
 ///
 /// // but you can still specify a caller name which will result in the standard behavior
-/// trace!("OtherCaller", "A different trace message.");
+/// trace!("OtherCaller"; "A different trace message.");
 /// # }
 /// ```
 #[macro_export]
 macro_rules! trace {
-    ($caller: expr, $( $argument: tt ) *) => {
+    ($caller: expr; $( $argument: tt ) *) => {
         $crate::log::trace!(target: &$caller, $( $argument ) *);
     };
     ($( $argument: tt ) *) => {
-        trace!(GOOLOG_CALLER, $( $argument ) *)
+        trace!(GOOLOG_CALLER; $( $argument ) *)
     }
 }
 /// This macro logs a message at the debug level. \
@@ -334,7 +335,7 @@ macro_rules! trace {
 /// # fn main() {
 /// # init_logger(None, None, None);
 ///
-/// debug!("Main", "Initiated logger.");
+/// debug!("Main"; "Initiated logger.");
 ///
 /// // This is what this macro will expand to:
 /// #[cfg(debug_assertions)]
@@ -354,21 +355,21 @@ macro_rules! trace {
 /// debug!("Initiated logger.");
 ///
 /// // This is what this macro will expand to:
-/// goolog::debug!(GOOLOG_CALLER, "Initiated logger.");
+/// goolog::debug!(GOOLOG_CALLER; "Initiated logger.");
 /// // this will then further expand to:
 /// goolog::log::debug!(target: &GOOLOG_CALLER, "Initiated logger.");
 ///
 /// // but you can still specify a caller name which will result in the standard behavior
-/// debug!("OtherCaller", "Initiated logger.");
+/// debug!("OtherCaller"; "Initiated logger.");
 /// # }
 /// ```
 #[macro_export]
 macro_rules! debug {
-    ($caller: expr, $( $argument: tt ) *) => {
+    ($caller: expr; $( $argument: tt ) *) => {
         #[cfg(debug_assertions)]
         $crate::log::debug!(target: &$caller, $( $argument ) *);
     };
     ($( $argument: tt ) *) => {
-        debug!(GOOLOG_CALLER, $( $argument ) *)
+        debug!(GOOLOG_CALLER; $( $argument ) *)
     }
 }
