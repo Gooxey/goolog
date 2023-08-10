@@ -1,7 +1,9 @@
-//! This module provides various macros used simplify printing log messages with a caller name set.
+//! This module provides various macros used simplify printing log messages with
+//! a caller name set.
 //!
 //! # Macros
 //!
+//! - [`set_caller!`](crate::set_caller)
 //! - [`info!`](crate::info)
 //! - [`warn!`](crate::warn)
 //! - [`error!`](crate::error)
@@ -9,13 +11,43 @@
 //! - [`trace!`](crate::trace)
 //! - [`debug!`](crate::debug)
 
+/// Set the caller for all log calls where no caller is specified. \
+/// \
+/// Note: Calling this macro creates the constant `GOOLOG_CALLER`.
+///
+/// # Example
+///
+/// ```
+/// use goolog::*;
+/// # fn main() {
+/// # init_logger(None, None, None);
+///
+/// set_caller!("Main");
+///
+/// info!("NotMain"; "The caller of this message is `NotMain`.");
+///
+/// info!("The caller of this message is `Main`.");
+/// # }
+/// ```
+#[macro_export]
+macro_rules! set_caller {
+    ($caller:literal) => {
+        /// A constant used by the goolog crate. \
+        /// See the [`set_caller macros documentation`](goolog::set_caller) for more
+        /// details.
+        const GOOLOG_CALLER: &str = $caller;
+    };
+}
+
 /// This macro logs a message at the info level. \
-/// Infos indicate important information that should be logged under normal conditions such as services starting.
+/// Infos indicate important information that should be logged under normal
+/// conditions such as services starting.
 ///
 /// # Parameters
 ///
 /// 1. This is the `name` under which this log should be sent.
-/// 2. The following arguments represent the `message` to be sent. It can be used in the same way as the [`format!`] macro.
+/// 2. The following arguments represent the `message` to be sent. It can be
+///    used in the same way as the [`format!`] macro.
 ///
 /// # Example
 ///
@@ -33,13 +65,14 @@
 /// # }
 /// ```
 ///
-/// In case you are tired of always specifying the name of the caller, you can also just set a constant:
+/// In case you are tired of always specifying the name of the caller, you can
+/// also just set a default caller for the module:
 ///
 /// ```
 /// use goolog::*;
 /// use std::time::Duration;
 ///
-/// const GOOLOG_CALLER: &str = "Main";
+/// set_caller!("Main");
 /// # fn main() {
 /// # init_logger(None, None, None);
 ///
@@ -65,12 +98,14 @@ macro_rules! info {
     }
 }
 /// This macro logs a message at the warn level. \
-/// Warnings indicate a potential problem that may or may not require investigation. They should be used sparingly to avoid becoming meaningless.
+/// Warnings indicate a potential problem that may or may not require
+/// investigation. They should be used sparingly to avoid becoming meaningless.
 ///
 /// # Parameters
 ///
 /// 1. This is the `name` under which this log should be sent.
-/// 2. The following arguments represent the `message` to be sent. It can be used in the same way as the [`format!`] macro.
+/// 2. The following arguments represent the `message` to be sent. It can be
+///    used in the same way as the [`format!`] macro.
 ///
 /// # Example
 ///
@@ -87,12 +122,13 @@ macro_rules! info {
 /// # }
 /// ```
 ///
-/// In case you are tired of always specifying the name of the caller, you can also just set a constant:
+/// In case you are tired of always specifying the name of the caller, you can
+/// also just set a default caller for the module:
 ///
 /// ```
 /// use goolog::*;
 ///
-/// const GOOLOG_CALLER: &str = "Main";
+/// set_caller!("Main");
 /// # fn main() {
 /// # init_logger(None, None, None);
 ///
@@ -118,17 +154,20 @@ macro_rules! warn {
     }
 }
 /// This macro logs a message at the error level. \
-/// Errors indicate a problem that needs to be investigated, but doesn't require immediate attention.
+/// Errors indicate a problem that needs to be investigated, but doesn't require
+/// immediate attention.
 ///
 /// # Limitations
 ///
-/// When used with the goolog logger, any message starting with `$goolog:fatal=` will be converted to a log line looking like it was printed by the [`fatal!`](crate::fatal)
-/// macro.
+/// When used with the goolog logger, any message starting with `$goolog:fatal=`
+/// will be converted to a log line looking like it was printed by the
+/// [`fatal!`](crate::fatal) macro.
 ///
 /// # Parameters
 ///
 /// 1. This is the `name` under which this log should be sent.
-/// 2. The following arguments represent the `message` to be sent. It can be used in the same way as the [`format!`] macro.
+/// 2. The following arguments represent the `message` to be sent. It can be
+///    used in the same way as the [`format!`] macro.
 ///
 /// # Example
 ///
@@ -145,12 +184,13 @@ macro_rules! warn {
 /// # }
 /// ```
 ///
-/// In case you are tired of always specifying the name of the caller, you can also just set a constant:
+/// In case you are tired of always specifying the name of the caller, you can
+/// also just set a default caller for the module:
 ///
 /// ```
 /// use goolog::*;
 ///
-/// const GOOLOG_CALLER: &str = "Main";
+/// set_caller!("Main");
 /// # fn main() {
 /// # init_logger(None, None, None);
 ///
@@ -175,13 +215,14 @@ macro_rules! error {
         error!(GOOLOG_CALLER; $( $argument ) *)
     }
 }
-/// This macro logs a message at the error level and exits the application with the error code 1. \
-/// Fatal errors indicate a problem that is not recoverable.
+/// This macro logs a message at the error level and exits the application with
+/// the error code 1. \ Fatal errors indicate a problem that is not recoverable.
 ///
 /// # Parameters
 ///
 /// 1. This is the `name` under which this log should be sent.
-/// 2. The following arguments represent the `message` to be sent. It can be used in the same way as the [`format!`] macro.
+/// 2. The following arguments represent the `message` to be sent. It can be
+///    used in the same way as the [`format!`] macro.
 ///
 /// # Example
 ///
@@ -210,12 +251,13 @@ macro_rules! error {
 /// # }
 /// ```
 ///
-/// In case you are tired of always specifying the name of the caller, you can also just set a constant:
+/// In case you are tired of always specifying the name of the caller, you can
+/// also just set a default caller for the module:
 ///
 /// ```should_panic
 /// use goolog::*;
 ///
-/// const GOOLOG_CALLER: &str = "Main";
+/// set_caller!("Main");
 /// # fn main() {
 /// # init_logger(None, None, None);
 ///
@@ -268,12 +310,14 @@ macro_rules! fatal {
     }
 }
 /// This macro logs a message at the trace level. \
-/// Trace messages indicate the steps leading up to errors and warnings, and should provide context to understand them.
+/// Trace messages indicate the steps leading up to errors and warnings, and
+/// should provide context to understand them.
 ///
 /// # Parameters
 ///
 /// 1. This is the `name` under which this log should be sent.
-/// 2. The following arguments represent the `message` to be sent. It can be used in the same way as the [`format!`] macro.
+/// 2. The following arguments represent the `message` to be sent. It can be
+///    used in the same way as the [`format!`] macro.
 ///
 /// # Example
 ///
@@ -289,12 +333,13 @@ macro_rules! fatal {
 /// # }
 /// ```
 ///
-/// In case you are tired of always specifying the name of the caller, you can also just set a constant:
+/// In case you are tired of always specifying the name of the caller, you can
+/// also just set a default caller for the module:
 ///
 /// ```
 /// use goolog::*;
 ///
-/// const GOOLOG_CALLER: &str = "Main";
+/// set_caller!("Main");
 /// # fn main() {
 /// # init_logger(None, None, None);
 ///
@@ -319,14 +364,16 @@ macro_rules! trace {
     }
 }
 /// This macro logs a message at the debug level. \
-/// Debug messages indicate debugging information that is compiled out of Release builds and is discouraged due to its tendency to create log noise. \
+/// Debug messages indicate debugging information that is compiled out of
+/// Release builds and is discouraged due to its tendency to create log noise. \
 /// \
 /// Note: Messages passed to this macro will only be printed during debug mode.
 ///
 /// # Parameters
 ///
 /// 1. This is the `name` under which this log should be sent.
-/// 2. The following arguments represent the `message` to be sent. It can be used in the same way as the [`format!`] macro.
+/// 2. The following arguments represent the `message` to be sent. It can be
+///    used in the same way as the [`format!`] macro.
 ///
 /// # Example
 ///
@@ -343,12 +390,13 @@ macro_rules! trace {
 /// # }
 /// ```
 ///
-/// In case you are tired of always specifying the name of the caller, you can also just set a constant:
+/// In case you are tired of always specifying the name of the caller, you can
+/// also just set a default caller for the module:
 ///
 /// ```
 /// use goolog::*;
 ///
-/// const GOOLOG_CALLER: &str = "Main";
+/// set_caller!("Main");
 /// # fn main() {
 /// # init_logger(None, None, None);
 ///

@@ -26,17 +26,13 @@ mod tests;
 const GOOLOG_CALLER: &str = "Logger";
 
 /// # DO NOT TOUCH THIS STATIC
+#[allow(non_upper_case_globals)]
 pub static INTERNAL__LOGGER_ACTIVE: OnceLock<()> = OnceLock::new();
 
 /// Generate the log line
 #[cfg(feature = "timestamp")]
 macro_rules! generate_log {
-    (
-        $max_name_length: ident,
-        $record: ident,
-        $colors: ident,
-        $message: ident
-    ) => {{
+    ($max_name_length:ident, $record:ident, $colors:ident, $message:ident) => {{
         let mut message = $message.to_string();
         let mut log_level = $colors.color($record.level()).to_string();
         #[cfg(not(feature = "std_fatal"))]
@@ -60,12 +56,7 @@ macro_rules! generate_log {
 /// Generate the log line
 #[cfg(not(feature = "timestamp"))]
 macro_rules! generate_log {
-    (
-        $max_name_length: ident,
-        $record: ident,
-        $colors: ident,
-        $message: ident
-    ) => {{
+    ($max_name_length:ident, $record:ident, $colors:ident, $message:ident) => {{
         let mut message = $message.to_string();
         let mut log_level = $colors.color($record.level()).to_string();
         #[cfg(not(feature = "std_fatal"))]
@@ -87,7 +78,8 @@ macro_rules! generate_log {
 
 /// Initiate the custom [`Logger`](fern::Dispatch). \
 /// \
-/// See the library documentation for more information on the usage and customization possibilities of the goolog logger.
+/// See the library documentation for more information on the usage and
+/// customization possibilities of the goolog logger.
 ///
 /// # Panics
 ///
@@ -123,7 +115,8 @@ pub fn init_logger(
 
     #[cfg(not(feature = "wasm"))]
     if let Some(mut logs_dir) = log_file.clone() {
-        // we need to pop here because logs_dir is the path to the log file and not the path to the log directory
+        // we need to pop here because logs_dir is the path to the log file and not the
+        // path to the log directory
         logs_dir.pop();
         std::fs::create_dir_all(&logs_dir).unwrap_or_else(|error| {
             fatal!(

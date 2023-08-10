@@ -53,7 +53,7 @@ For this method, you will only need to specify the caller name once:
 ```rust
 use goolog::*;
 
-const GOOLOG_CALLER: &str = "Main";
+set_caller!("Main");
 
 fn main() {
     // Initializing the logger
