@@ -48,7 +48,7 @@ pub fn init_logger(
     {
         logger = Logger {
             log_level,
-            println: &|time_stamp, target, level, args| println!("[{}] {} | {:14.14} | {}", time_stamp, target, level, args),
+            println: &|time_stamp, target, level, args| println!("[{} | {} | {:14.14}] {}", time_stamp, target, level, args),
         }
     }
 
