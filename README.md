@@ -17,8 +17,10 @@ fn main() {
         None,
         None,
         // println callback
-        &|_args| {
+        &|time_stamp, target, level, args| {
             // something printing our args to the console
+            // example:
+            println!("[{}] {} | {:14.14} | {}", time_stamp, target, level, args)
         },
     );
 

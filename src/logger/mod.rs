@@ -8,9 +8,6 @@ use log::{
 };
 use spin::Mutex;
 
-use self::band_aid_fix::DisplayChars;
-
-mod band_aid_fix;
 
 static SETTING_LOGGER: Mutex<()> = Mutex::new(());
 static mut LOGGER: Option<Logger> = None;
@@ -21,7 +18,7 @@ static TARGET_LENGTH: Mutex<u8> = Mutex::new(16);
 #[derive(Debug)]
 pub struct LoggerAlreadySet;
 
-type Println = &'static (dyn Fn(Arguments<'_>) + Sync + Send);
+type Println = &'static (dyn Fn(&str, &str, Level, &Arguments<'_>) + Sync + Send);
 
 /// Set the space for the target to a fixed size.
 pub fn set_target_length(target_length: u8) {
@@ -51,7 +48,7 @@ pub fn init_logger(
     {
         logger = Logger {
             log_level,
-            println: &|args| println!("{args}"),
+            println: &|time_stamp, target, level, args| println!("[{} | {} | {:14.14}] {}", time_stamp, target, level, args),
         }
     }
 
@@ -96,8 +93,11 @@ impl Log for Logger {
         if self.enabled(record.metadata()) {
             // timestamp in std
             #[cfg(feature = "std")]
-            let time_stamp = chrono::Local::now()
-                .format("\x1b[2m\x1b[1m%d.%m.%Y\x1b[0m | \x1b[2m\x1b[1m%H:%M:%S\x1b[0m | ");
+            let time_stamp_string = chrono::Local::now()
+                .format("\x1b[2m\x1b[1m%d.%m.%Y\x1b[0m | \x1b[2m\x1b[1m%H:%M:%S\x1b[0m | ")
+                .to_string();
+            #[cfg(feature = "std")]
+            let time_stamp = &time_stamp_string;
             #[cfg(not(feature = "std"))]
             let time_stamp = "";
 
@@ -105,28 +105,21 @@ impl Log for Logger {
             let target;
             let max_name_length = TARGET_LENGTH.lock();
             if *max_name_length == 0 {
-                target = record.target().into()
-            } else {
+                target = record.target()
+            }
+            else {
                 let name = record.target();
                 let name_len = name.len();
                 if name_len >= *max_name_length as usize {
-                    target = name.chars().take(*max_name_length as usize).into();
-                } else {
-                    target = DisplayChars::new(
-                        name.chars().take(usize::MAX).into(),
-                        *max_name_length as usize - name_len,
-                    );
+                    target = &name[0..(*max_name_length) as usize];
+                }
+                else {
+                    target = name
                 }
             }
             drop(max_name_length);
 
-            (self.println)(format_args!(
-                "{}{} | {:14.14} | {}",
-                time_stamp,
-                target,
-                record.metadata().level(),
-                record.args()
-            ))
+            (self.println)(time_stamp, target.into(), record.metadata().level(), record.args())
         }
     }
 
