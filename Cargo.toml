@@ -8,7 +8,7 @@ license = "MIT"
 readme = "README.md"
 publish = true
 repository = "https://github.com/Gooxey/goolog.git"
-categories = ["development-tools::debugging", "embedded", "no-std", "no-std:no-alloc"]
+categories = ["development-tools::debugging", "embedded", "no-std", "no-std::no-alloc"]
 keywords = ["embedded", "no-std", "log", "logger", "macros"]
 
 [features]
