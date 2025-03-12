@@ -1,6 +1,6 @@
 [package]
 name = "goolog"
-version = "0.10.1"
+version = "0.11.0"
 description = "This library provides the no_std-compatible goolog logger and some macros to simplify printing logs."
 authors = ["Gooxey <dennis.tiderko@gmail.com>"]
 edition = "2021"
